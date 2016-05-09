@@ -15,8 +15,8 @@ class DBTool(object):
 			cur = conn.cursor()
 			cur.execute(sql)
 			conn.commit()
-		print 'execute',sql,'successfully!!'
-			finally:
-				if cur:
-					cur.close()
+			print('execute'+sql+'successfully!!')
+		finally:
+			if cur:
+				cur.close()
 

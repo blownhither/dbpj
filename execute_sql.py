@@ -11,14 +11,14 @@ def execute_sql_file(sql_file):
 			return
 		cur = conn.cursor()
  		count = 0
-		for(line in sql_file):
+		for line in open(sql_file):
 			cur.execute(line)
-			count++
+			count=count+1
 		print(count + 'line(s) executed')
 		conn.commit()
 	
 	finally:
-	if cur:
-		cur.close()
-	if conn:
-		conn.close()
+		if cur:
+			cur.close()
+		if conn:
+			conn.close()
