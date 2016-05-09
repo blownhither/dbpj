@@ -1,18 +1,15 @@
-drop schema if exists test;
-create schema if not exists test;
-use test;
 create table if not exists category (
 	category_title 	varchar(255),
-    category_desc 	text,				#description
+    category_desc 	text,				
     category_id 	smallint auto_increment not null,
 	primary key(category_id)
 );
 
 create table if not exists item (
-	item_name 		varchar(255),			# notes: varchar stores up to 255B for safe Chinese usage, use text otherwise
+	item_name 		varchar(255),			
     category_id 	smallint ,
     item_id 		int auto_increment not null,
-									# maybe other attributes
+									
     primary key(item_id),
     constraint category_id_item foreign key (category_id) references category(category_id)
 );
@@ -21,7 +18,7 @@ create table if not exists seller (
     store_name 		varchar(255),
     store_addr 		text,
     store_city 		varchar(255),
-    owner_id 		int,					# this ought to be personal identity id
+    owner_id 		int,					
     store_id 		int auto_increment not null,
     primary key(store_id)
 );
