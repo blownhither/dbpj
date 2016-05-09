@@ -13,4 +13,4 @@ conn = informixdb.connect(Database+'@'+Server,Username,Password)
 if not conn:
 	raise Exception("Failed to connect via SQL to " + dbservername)
 else:
-	print("connected. feel free to use conn = informixdb.connect(",Database+'@'+Server,Username,Password")")
+	print("connected. feel free to use conn = informixdb.connect(",Database+'@'+Server,Username,Password,")")
