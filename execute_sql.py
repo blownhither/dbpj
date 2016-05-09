@@ -14,11 +14,9 @@ def get_cmd_line(sql_file):
 			print('error')
 
 
-def execute_sql_file(sql_file):
+def execute_sql_file(sql_file, conn):
 	try:
 		print(Database,Server,Username,Password)
-		cur = conn = None
-		conn = informixdb.connect(Database+'@'+Server,Username,Password)
 		if not conn:
 			raise Exception("Failed to connect via SQL to " + dbservername)
 			return

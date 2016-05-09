@@ -14,18 +14,17 @@ def get_cmd_line(sql_file):
 			print('error')
 
 
-def execute_sql_file(sql_file):
+def execute_sql_file(sql_file, conn):
 	try:
 		print(Database,Server,Username,Password)
-		cur = conn = None
-		conn = informixdb.connect(Database+'@'+Server,Username,Password)
+		cur = None
 		if not conn:
 			raise Exception("Failed to connect via SQL to " + dbservername)
 			return
 		cur = conn.cursor()
  		count = 0
  		strlist = get_cmd_line(sql_file)
-		for line in open(sql_file):
+		for line in strlist:
 			cur.execute(line)
 			count=count+1
 		print(count + 'line(s) executed')
