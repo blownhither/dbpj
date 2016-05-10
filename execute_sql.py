@@ -14,13 +14,10 @@ def get_cmd_line(sql_file):
 			print('error')
 
 
-def execute_sql_file(sql_file, conn):
+def execute_sql_file(sql_file, cur):
 	try:
-		print(Database,Server,Username,Password)
-		if not conn:
-			raise Exception("Failed to connect via SQL to " + dbservername)
-			return
-		cur = conn.cursor()
+		if not cur:
+			raise Exception("Invalid Cursor")
  		count = 0
  		strlist = get_cmd_line(sql_file)
 		for line in strlist:
