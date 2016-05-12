@@ -1,0 +1,6 @@
+!.gitignore
+test*
+*.pyc
+ibm_db
+ibm_db.pub
+*.pub
