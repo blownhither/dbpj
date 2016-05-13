@@ -89,19 +89,19 @@ class SqlRequest:
             print("User ID replication found on " + id.__str__())
         return ans == 1
 
+        # update, seller_id, order_id):
+        # if customer_id is None or total_price is None:
+        #     print("Unspecified Key Fields")
+        #     return
+        # # for i in [order_date, payment_date, last_update]:
+        # #     i = self.__currentName
+        # order_date =  payment_date = last_update = self.__currentName
+        # return self._add_fields(self.__orderName, 10,
+        #                         [deliver_id, comment_seller, customer_id, payment_status, total_price, order_date,
+        #                          payment_date,
+        #                          last_update, seller_id, order_id], 2)
 
 
-update, seller_id, order_id):
-        if customer_id is None or total_price is None:
-            print("Unspecified Key Fields")
-            return
-        # for i in [order_date, payment_date, last_update]:
-        #     i = self.__currentName
-        order_date =  payment_date = last_update = self.__currentName
-        return self._add_fields(self.__orderName, 10,
-                                [deliver_id, comment_seller, customer_id, payment_status, total_price, order_date,
-                                 payment_date,
-                                 last_update, seller_id, order_id], 2)
 
     def add_detail(self, comment_inventory, order_id, inventory_id, quantity):
         if order_id is None or inventory_id is None:
