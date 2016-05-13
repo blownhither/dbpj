@@ -16,7 +16,6 @@ class SqlStatement:
         self.__orderName = 'single_order'
         self.__currentName = 'current'
         self.__detailName = 'detail'
-        self.stat = sql_statement.SqlStatement()
         self.conn = None
         self.conn = informixdb.connect(self.__Database + '@' + self.__Server, self.__Username, self.__Password)
         if not self.conn:
