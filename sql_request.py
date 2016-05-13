@@ -123,9 +123,9 @@ class SqlRequest:
         self._sql_execute(st)
         return True
 
-    def _add_user(self, name, passw):
+    def _add_user(self, name, passw, prev):
         try:
-            st = self.stat.add_user(name, passw, 1)
+            st = self.stat.add_user(name, passw, prev)
             self._sql_execute(st)
             user_id = self._sql_last_insert()
             # debug
@@ -140,16 +140,16 @@ class SqlRequest:
     def add_seller(self, user_name, user_pass, seller_name, seller_addr):
         if self._is_none(seller_name):
             return False
-        uid = self._add_user(user_name, user_pass)
-        st = self.stat.add_seller(uid, seller_name, seller_addr)
+        uid = self._add_user(user_name, user_pass, 1)
+        st = self.stat.add_seller(seller_name, seller_addr, uid)
         self._sql_execute(st)
         return True
 
     def add_customer(self, user_name, user_pass, customer_name, customer_email):
         if self._is_none(customer_name):
             return False
-        uid = self._add_user(user_name, user_pass)
-        st = self.stat.add_seller(uid, customer_name, customer_email)
+        uid = self._add_user(user_name, user_pass, 2)
+        st = self.stat.add_seller(customer_name, customer_email, uid)
         self._sql_execute(st)
         return True
 
@@ -162,6 +162,17 @@ class SqlRequest:
                                      seller=seller_id)
         self._sql_execute(st)
         return True
+
+    def add_single_order(self, comment_seller, deliver_id, customer_id, payment_status, total_price, order_date, payment_date, last_update, seller_id):
+        if payment_status is None:
+            payment_status = 0
+            payment_date = 'NULL'
+        if payment_status > 1:
+            payment_date = 'CURRENT'
+            order_date = last_update = 'CURRENT'
+        #TODO:
+
+
 
         # def add_category(self, dic):
         #     if self._is_none(dic) or not self._is_dict(dic):
