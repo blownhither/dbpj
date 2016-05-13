@@ -3,7 +3,7 @@ import os
 import sql_statement
 
 
-class SqlRequest:
+class SqlStatement:
     def __init__(self):
         self.__Database = 'd_1460371357365469'
         self.__Server = 'ifxserver1'
