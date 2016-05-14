@@ -21,7 +21,7 @@ class SqlRequest:
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                             datefmt='%a, %d %b %Y %H:%M:%S',
-                            filename='sql_request.log',
+                            filename='log_sql_request.log',
                             filemode='w')
         # sql statement object
         self.stat = sql_statement.SqlStatement()
@@ -157,55 +157,102 @@ class SqlRequest:
                       category_id, seller_id):
         if self._any_none([inventory_name, inventory_price, inventory_quantity, seller_id]):
             return False
-        st = self.stat.add_inventory(name=inventory_name, desc=inventory_desc, picture=picture_url,
-                                     price=inventory_price, quantity=inventory_quantity, category=category_id,
-                                     seller=seller_id)
+        st = self.stat.add_inventory(inventory_name=inventory_name, inventory_desc=inventory_desc,
+                                     picture_url=picture_url,
+                                     inventory_price=inventory_price, inventory_quantity=inventory_quantity,
+                                     category_id=category_id,
+                                     seller_id=seller_id)
         self._sql_execute(st)
         return True
 
-    def add_single_order(self, comment_seller, deliver_id, customer_id, payment_status, total_price, order_date, payment_date, last_update, seller_id):
-        if payment_status is None:
+    # def _add_detail(self, comment_inventory, order_id, inventory_id, quantity=1):
+    #     if self._any_none([order_id, inventory_id, quantity]):
+    #         return False
+    #     st = self.stat.add_detail(comment_inventory, order_id, inventory_id, quantity)
+    #     self._sql_execute(st)
+    #     return True
+
+    @staticmethod
+    def _check_detail(l):
+        for i in l:
+            if not isinstance(i, tuple) or not len(tuple) == 3:
+                return False
+
+    def _add_detail(self, l, order_id):
+        # l in format of [(cmt, (o_id OMITTED!!) i_id, qua), (), ...]
+        try:
+            cur = self._new_cursor()
+            for i in l:
+                st = self.stat.add_detail(l[i][0], order_id, l[i][1], l[i][2])
+                cur.execute(st)
+            return True
+        except Exception:
+            logging.error(Exception(
+                "Adding detail to order[" + order_id.__str__() + '] encountered exceptions, try rolling back'))
+            return False
+
+    # TODO: delete order when detail insertion failed, maybe rollback?
+    def add_single_order(self, comment_seller, deliver_id, customer_id, payment_status, total_price, order_date,
+                         payment_date, last_update, seller_id, detail):
+        if self._any_none([customer_id, total_price, detail]):
+            return False
+        # type check on detail: should be [(cmt, (o_id OMITTED!!) i_id, qua), (), ...]
+        if not isinstance(detail, list):
+            return False
+        if not self._check_detail(detail):
+            return False
+        if payment_status is None or payment_status == 0:
             payment_status = 0
             payment_date = 'NULL'
         if payment_status > 1:
             payment_date = 'CURRENT'
-            order_date = last_update = 'CURRENT'
-        #TODO:
+        order_date = last_update = 'CURRENT'
+        st = self.stat.add_single_order(comment_seller, deliver_id, customer_id, payment_status, total_price,
+                                        order_date, payment_date, last_update, seller_id)
+        self._sql_execute(st)
+        order_id = self._sql_last_insert()
+        if self._add_detail(detail, order_id):
+            return True
+        else:
+            # TODO: please implement me
+            pass
 
 
 
-        # def add_category(self, dic):
-        #     if self._is_none(dic) or not self._is_dict(dic):
-        #         return
-        #     title = dic.get('category_title', None)
-        #     desc = dic.get('category_desc', None)
-        #     st = self.stat.add_category(title, desc)
-        #     self._sql_execute(st)
 
-        # def add_customer(self, dic):
-        #     if self._is_none(dic) or not self._is_dict(dic):
-        #         return
-        #     name = dic.get('user_name', None)
-        #     passw = dic.get('user_pass', None)
-        #     cus_name = dic.get('customer_name', None)
-        #     cus_email = dic.get('customer_email', None)
-        #     if self._any_none([name, passw, cus_email]):
-        #         return
-        #     user_id = self._add_user(name, passw)
-        #     st = self.stat.add_customer(cus_name, cus_email, user_id)
-        #     self._sql_execute(st)
+            # def add_category(self, dic):
+            #     if self._is_none(dic) or not self._is_dict(dic):
+            #         return
+            #     title = dic.get('category_title', None)
+            #     desc = dic.get('category_desc', None)
+            #     st = self.stat.add_category(title, desc)
+            #     self._sql_execute(st)
 
-        # def exist_user_name(self, user_name):
-        #     if self._is_none:
-        #         return
-        #     sql_st = 'select user_id from ' + self.__userTabName + 'where user_name like \'' + user_name.__str__() + '\''
-        #     ans = self._sql_fetchall(sql_st)
+            # def add_customer(self, dic):
+            #     if self._is_none(dic) or not self._is_dict(dic):
+            #         return
+            #     name = dic.get('user_name', None)
+            #     passw = dic.get('user_pass', None)
+            #     cus_name = dic.get('customer_name', None)
+            #     cus_email = dic.get('customer_email', None)
+            #     if self._any_none([name, passw, cus_email]):
+            #         return
+            #     user_id = self._add_user(name, passw)
+            #     st = self.stat.add_customer(cus_name, cus_email, user_id)
+            #     self._sql_execute(st)
 
-        # def exist_user(self, id):
-        #     if self._is_none:
-        #         return
-        #     sql_str = 'select * from ' + self.__userTabName + 'where user_id = ' + id.__str__()
-        #     ans = self._sql_count(sql_str)
-        #     if ans > 1:
-        #         print("User ID replication found on " + id.__str__())
-        #     return ans == 1
+            # def exist_user_name(self, user_name):
+            #     if self._is_none:
+            #         return
+            #     sql_st = 'select user_id from ' + self.__userTabName + 'where user_name like \'' + user_name.__str__() + '\''
+            #     ans = self._sql_fetchall(sql_st)
+
+            # def exist_user(self, id):
+            #     if self._is_none:
+            #         return
+            #     sql_str = 'select * from ' + self.__userTabName + 'where user_id = ' + id.__str__()
+            #     ans = self._sql_count(sql_str)
+            #     if ans > 1:
+            #         print("User ID replication found on " + id.__str__())
+            #     return ans == 1
+

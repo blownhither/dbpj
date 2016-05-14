@@ -30,7 +30,8 @@ class SqlStatement:
             else:
                 return obj
 
-    def _add_statemnt(self, tab_name, str_count, l):
+    @staticmethod
+    def _add_statement(tab_name, str_count, l):
         st = 'insert into ' + tab_name + ' values ('
         for i in l:
             if i is None:
@@ -47,27 +48,50 @@ class SqlStatement:
         st += ');'
         return st
 
+    def  _update_statement(self, tab_name, str_count, attr_list, val_list, attr_old, val_old, str_old):
+        # should NOT be used when condition is ' attr is NULL '
+        st = 'update ' + tab_name + ' set '
+        for i in range(0, len(attr_list)):
+            st += attr_list[i] + '='
+            if hasattr(val_list[i], '__str__'):
+                val_list[i] = val_list[i].__str__()
+            if str_count > 0:
+                st += '\'' + val_list[i] + '\','
+                str_count -= 1
+            else:
+                st += val_list[i] + ','
+        st = st[0:-1] + ' where '
+        for i in range(0, len(attr_old)):
+            st += attr_old[i] + '='
+            if hasattr(val_old[i], '__str__'):
+                val_old[i] = val_old[i].__str__()
+            if str_old > 0:
+                st += '\'' + val_old[i] + '\','
+                str_old -= 1
+            else:
+                st += val_old[i] + ','
+
     def add_category(self, category_title=None, category_desc=None):
         # st = 'insert into ' + self.__categoryName + ' values (\'' + category_title + '\', \'' + self._none_null(category_desc) + '\', 0);'
-        st = self._add_statemnt(self.__categoryName, 2, [category_title, category_desc, 0])
+        st = self._add_statement(self.__categoryName, 2, [category_title, category_desc, 0])
         return st
 
     def add_user(self, name, passw, prev):
-        st = self._add_statemnt(self.__userTabName, 2, [name, passw, prev, 0])
+        st = self._add_statement(self.__userTabName, 2, [name, passw, prev, 0])
         return st
 
     def add_seller(self, seller_name, seller_addr, user_id):
-        st = self._add_statemnt(self.__sellerName, 2, [seller_name, seller_addr, user_id])
+        st = self._add_statement(self.__sellerName, 2, [seller_name, seller_addr, user_id])
         return st
 
     def add_customer(self, customer_name, customer_email, user_id):
-        st = self._add_statemnt(self.__sellerName, 2, [customer_name, customer_email, user_id])
+        st = self._add_statement(self.__sellerName, 2, [customer_name, customer_email, user_id])
         return st
 
     def add_inventory(self, inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
                       category_id, seller_id):
-        st = self._add_statemnt(self.__inventoryName, 3, [inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
-                      category_id, seller_id, 0])
+        st = self._add_statement(self.__inventoryName, 3, [inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
+                                                           category_id, seller_id, 0])
         return st
 
     def add_single_order(self, comment_seller, deliver_id, customer_id, payment_status, total_price, order_date, payment_date, last_update, seller_id):
@@ -77,9 +101,16 @@ class SqlStatement:
         # if payment_status > 1:
         #     payment_date = 'CURRENT'
         # order_date = last_update = 'CURRENT'
-        st = self._add_statemnt(self.__orderName, 2, [comment_seller, deliver_id, customer_id, payment_status, total_price, order_date, payment_date, last_update, seller_id, 0])
+        st = self._add_statement(self.__orderName, 2, [comment_seller, deliver_id, customer_id, payment_status, total_price, order_date, payment_date, last_update, seller_id, 0])
         return st
 
     def add_detail(self, comment_inventory, order_id, inventory_id, quantitiy=1):
-        st = self._add_statemnt(self.__orderName, 1, [comment_inventory, order_id, inventory_id, quantitiy])
+        st = self._add_statement(self.__detailName, 1, [comment_inventory, order_id, inventory_id, quantitiy])
         return st
+
+    def update_inventory(self, inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
+                      category_id, seller_id):
+        pass
+
+    def delete_inventory(self, ):
+        pass
