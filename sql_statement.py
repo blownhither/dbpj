@@ -109,7 +109,7 @@ class SqlStatement:
         return st
 
     def check_login(self, user_name, user_pass):
-        st = 'select * from ' + self.__userTabName + ' where user_name like ' + user_name + ' and user_pass like ' + user_pass + ';'
+        st = 'select user_name, user_privilege, user_id from ' + self.__userTabName + ' where user_name like \'' + user_name + '\' and user_pass like \'' + user_pass + '\';'
         return st
 
     def update_inventory_quantity(self, inventory_id, quantity_diff):
