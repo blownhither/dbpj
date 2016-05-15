@@ -44,7 +44,7 @@ class SqlRequest:
         for i in l:
             if i is None:
                 print('Unspecified Key Fields ')
-            return True
+                return True
         return False
 
     @staticmethod
@@ -181,15 +181,23 @@ class SqlRequest:
     def _add_detail(self, l, order_id):
         # l in format of [(cmt, (o_id OMITTED!!) i_id, qua), (), ...]
         try:
+
             cur = self._new_cursor()
             for i in l:
+                # add detail entry
                 st = self.stat.add_detail(l[i][0], order_id, l[i][1], l[i][2])
                 cur.execute(st)
+                # cut inventory stock count
+                st = self.stat.update_inventory_quantity(inventory_id=l[i][1], quantity_diff=l[i][2])
+                cur.excute(st)
             return True
         except Exception:
             logging.error(Exception(
                 "Adding detail to order[" + order_id.__str__() + '] encountered exceptions, try rolling back'))
             return False
+        finally:
+            if cur is not None:
+                cur.close()
 
     # TODO: delete order when detail insertion failed, maybe rollback?
     def add_single_order(self, comment_seller, deliver_id, customer_id, payment_status, total_price, order_date,
@@ -216,7 +224,9 @@ class SqlRequest:
         else:
             # TODO: please implement me
             pass
+    # end of adding methods
 
+    def
 
 
 

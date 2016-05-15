@@ -108,9 +108,19 @@ class SqlStatement:
         st = self._add_statement(self.__detailName, 1, [comment_inventory, order_id, inventory_id, quantitiy])
         return st
 
-    def update_inventory(self, inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
-                      category_id, seller_id):
-        pass
+    def update_inventory_quantity(self, inventory_id, quantity_diff):
+        st = 'update ' + self.__inventoryName + ' set inventory_quantity = inventory_quantity +' + quantity_diff.__str__() + ' '
+        st += 'where inventory_id = ' + inventory_id.__str__() + ' and inventory_quantity > -(' + quantity_diff.__str__() + ');'
+        return st
 
-    def delete_inventory(self, ):
-        pass
+    def update_inventory_price(self, inventory_id, new_price):
+        st = 'update ' + self.__inventoryName + ' set inventory_price = ' + new_price.__str__() + ' '
+        st += 'where inventory_id = ' + inventory_id.__str__() + ';'
+
+    # def update_inventory(self, inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
+    #                   category_id, seller_id):
+    #     pass
+
+    def delete_inventory(self, inventory_id):
+        st = 'delete from ' + self.__inventoryName
+        st += ' where inventory_id = ' + inventory_id.__str__()
