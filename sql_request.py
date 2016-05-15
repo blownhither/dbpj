@@ -226,7 +226,16 @@ class SqlRequest:
             pass
     # end of adding methods
 
-    def
+    def check_login(self, user_name, user_pass):
+        st = self.stat.check_login(user_name, user_pass)
+        ans = self._sql_fetchall(st)
+        if len(ans) != 1:
+            return None
+        else:
+            return {'user_name': ans[0][0], 'user_privilege': ans[0][2], 'user_id': ans[0][3]}
+
+
+
 
 
 

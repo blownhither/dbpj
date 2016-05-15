@@ -108,6 +108,10 @@ class SqlStatement:
         st = self._add_statement(self.__detailName, 1, [comment_inventory, order_id, inventory_id, quantitiy])
         return st
 
+    def check_login(self, user_name, user_pass):
+        st = 'select * from ' + self.__userTabName + ' where user_name like ' + user_name + ' and user_pass like ' + user_pass + ';'
+        return st
+
     def update_inventory_quantity(self, inventory_id, quantity_diff):
         st = 'update ' + self.__inventoryName + ' set inventory_quantity = inventory_quantity +' + quantity_diff.__str__() + ' '
         st += 'where inventory_id = ' + inventory_id.__str__() + ' and inventory_quantity > -(' + quantity_diff.__str__() + ');'
@@ -117,6 +121,8 @@ class SqlStatement:
         st = 'update ' + self.__inventoryName + ' set inventory_price = ' + new_price.__str__() + ' '
         st += 'where inventory_id = ' + inventory_id.__str__() + ';'
 
+
+
     # def update_inventory(self, inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
     #                   category_id, seller_id):
     #     pass
@@ -124,3 +130,4 @@ class SqlStatement:
     def delete_inventory(self, inventory_id):
         st = 'delete from ' + self.__inventoryName
         st += ' where inventory_id = ' + inventory_id.__str__()
+        # TODO
