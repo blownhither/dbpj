@@ -32,6 +32,11 @@ class SqlRequest:
             raise Exception("Failed to connect via SQL to informixdb")
         else:
             print("connected to database " + self.__Database)
+        # big const
+        self.__inventoryAttr = (
+            'inventory_name', 'inventory_desc', 'picture_url', 'inventory_price', ' inventory_quantity', 'category_id',
+            'seller_id', 'inventory_id 	'
+        )
 
     @staticmethod
     def _is_none(att):
@@ -77,9 +82,10 @@ class SqlRequest:
         cur = self._new_cursor()
         try:
             cur.execute(sql_str)
+            return True
         except Exception as e:
             logging.exception(e)
-            return None
+            return False
         finally:
             cur.close()
 
@@ -120,8 +126,10 @@ class SqlRequest:
         if self._any_none([category_title, category_desc]):
             return False
         st = self.stat.add_category(category_title, category_desc)
-        self._sql_execute(st)
-        return True
+        if self._sql_execute(st):
+            return True
+        else:
+            return False
 
     def _add_user(self, name, passw, prev):
         try:
@@ -142,16 +150,20 @@ class SqlRequest:
             return False
         uid = self._add_user(user_name, user_pass, 1)
         st = self.stat.add_seller(seller_name, seller_addr, uid)
-        self._sql_execute(st)
-        return True
+        if self._sql_execute(st):
+            return True
+        else:
+            return False
 
     def add_customer(self, user_name, user_pass, customer_name, customer_email):
-        if self._is_none(customer_name):
+        if self._is_none(customer_name) or self._is_none(customer_email):
             return False
         uid = self._add_user(user_name, user_pass, 2)
         st = self.stat.add_seller(customer_name, customer_email, uid)
-        self._sql_execute(st)
-        return True
+        if self._sql_execute(st):
+            return True
+        else:
+            return False
 
     def add_inventory(self, inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
                       category_id, seller_id):
@@ -162,8 +174,10 @@ class SqlRequest:
                                      inventory_price=inventory_price, inventory_quantity=inventory_quantity,
                                      category_id=category_id,
                                      seller_id=seller_id)
-        self._sql_execute(st)
-        return True
+        if self._sql_execute(st):
+            return True
+        else:
+            return False
 
     # def _add_detail(self, comment_inventory, order_id, inventory_id, quantity=1):
     #     if self._any_none([order_id, inventory_id, quantity]):
@@ -181,7 +195,6 @@ class SqlRequest:
     def _add_detail(self, l, order_id):
         # l in format of [(cmt, (o_id OMITTED!!) i_id, qua), (), ...]
         try:
-
             cur = self._new_cursor()
             for i in l:
                 # add detail entry
@@ -224,6 +237,7 @@ class SqlRequest:
         else:
             # TODO: please implement me
             pass
+
     # end of adding methods
 
     def check_login(self, user_name, user_pass):
@@ -232,11 +246,61 @@ class SqlRequest:
         if len(ans) != 1:
             return None
         else:
-            return {'user_name': ans[0][0], 'user_privilege': ans[0][2], 'user_id': ans[0][3]}
+            return {'user_name': ans[0][0], 'user_privilege': ans[0][1], 'user_id': ans[0][2]}
 
+    # TODO: check roll back possibilities, or use valid bit
+    # TODO: check db's return on update statement
+    # TODO: check optimistic lock or pessimistic lock
 
+    def update_inventory_quantity(self, inventory_id, quantity_diff):
+        st = self.stat.update_inventory_quantity(inventory_id, quantity_diff)
+        if self._sql_execute(st):
+            return True
+        else:
+            return False
 
+    def update_inventory_price(self, inventory_id, new_price):
+        st = self.stat.update_inventory_price(inventory_id, new_price)
+        if self._sql_execute(st):
+            return True
+        else:
+            return False
 
+    @staticmethod
+    def _make_dict_list(att, val):
+        if att is None or val is None or len(att) != len(val[0]):
+            raise Exception('sql_request._make_dict receive invalid param')
+        ans = []
+        for tup in val:
+            dic = {}
+            for i in range(0, len(att)):
+                dic[att[i]] = tup[i]
+            ans.append(dic)
+        return ans
+
+    def _make_inventory_dict(self, val):
+        return self._make_dict_list(self.__inventoryAttr, val)
+
+    def search_inventory_id(self, inventory_id):
+        st = self.stat.search_inventory_id(inventory_id)
+        ans = self._sql_fetchall(st)
+        if ans:
+            return self._make_inventory_dict(ans)
+        else:
+            return False
+
+    def search_inventory(self, page_size=10, page_num=0, inventory_name=None, inventory_desc=None, price_up=None,
+                         price_down=None, category_id=None, seller_id=None):
+        # st = self.stat.search_inventory(inventory_name, inventory_desc, price_up, price_down, category_id, seller_id)
+        # ans = self._sql_fetchall(st)
+        # return self._make_inventory_dict(ans)
+        st = self.stat.search_inventory_page(page_size, page_num, inventory_name, inventory_desc, price_up, price_down,
+                                             category_id, seller_id)
+        ans = self._sql_fetchall(st)
+        if ans:
+            return self._make_inventory_dict(ans)
+        else:
+            return False
 
 
             # def add_category(self, dic):

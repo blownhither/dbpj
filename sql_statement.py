@@ -112,6 +112,64 @@ class SqlStatement:
         st = 'select user_name, user_privilege, user_id from ' + self.__userTabName + ' where user_name like \'' + user_name + '\' and user_pass like \'' + user_pass + '\';'
         return st
 
+    @staticmethod
+    def _att_like_val(att, val):
+        if val is None:
+            return ''
+        return att + ' like \'' + val.__str__() + '\' '
+
+    @staticmethod
+    def _att_equal_val(att, val):
+        if val is None:
+            return ''
+        return att + ' = ' + val.__str__() + ' '
+
+    def search_inventory_id(self, inventory_id):
+        st = 'select * from ' + self.__inventoryName + ' where inventory_id = ' + inventory_id.__str__()
+        return st
+
+    def search_inventory_page(self, page_size=10, page_num=0, inventory_name=None, inventory_desc=None, price_up=None, price_down=None, category_id=None, seller_id=None):
+        st = 'select skip ' + (page_size * page_num).__str__() + ' first ' + page_size.__str__() + ' * from inventory where '
+        # if every is None, omitted
+        if inventory_name is not None:
+            st += self._att_like_val('inventory_name', inventory_name)
+            if inventory_desc is not None:
+                st += ' and '
+        if inventory_desc is not None:
+            st += self._att_like_val('inventory_desc', inventory_desc)
+        if price_down is None:
+            price_down = 0
+        if price_up is None:
+            price_up = 10000000
+        st += ' and inventory_price between ' + price_up.__str__() + ' and ' + price_down.__str__()
+        if category_id is not None:
+            st += ' and ' + self._att_equal_val('category_id', category_id)
+        if seller_id is not None:
+            st += ' and ' + self._att_equal_val('seller_id', seller_id)
+        st += ';'
+        return st
+
+    def search_inventory(self, inventory_name=None, inventory_desc=None, price_up=None, price_down=None, category_id=None, seller_id=None):
+        st = 'select * from inventory where '
+        # if every is None, omitted
+        if inventory_name is not None:
+            st += self._att_like_val('inventory_name', inventory_name)
+            if inventory_desc is not None:
+                st += ' and '
+        if inventory_desc is not None:
+            st += self._att_like_val('inventory_desc', inventory_desc)
+        if price_down is None:
+            price_down = 0
+        if price_up is None:
+            price_up = 10000000
+        st += ' and inventory_price between ' + price_up.__str__() + ' and ' + price_down.__str__()
+        if category_id is not None:
+            st += ' and ' + self._att_equal_val('category_id', category_id)
+        if seller_id is not None:
+            st += ' and ' + self._att_equal_val('seller_id', seller_id)
+        st += ';'
+        return st
+
     def update_inventory_quantity(self, inventory_id, quantity_diff):
         st = 'update ' + self.__inventoryName + ' set inventory_quantity = inventory_quantity +' + quantity_diff.__str__() + ' '
         st += 'where inventory_id = ' + inventory_id.__str__() + ' and inventory_quantity > -(' + quantity_diff.__str__() + ');'
