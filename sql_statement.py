@@ -141,7 +141,7 @@ class SqlStatement:
             price_down = 0
         if price_up is None:
             price_up = 10000000
-        st += ' and inventory_price between ' + price_up.__str__() + ' and ' + price_down.__str__()
+        st += ' and inventory_price between ' + price_down.__str__() + ' and ' + price_up.__str__()
         if category_id is not None:
             st += ' and ' + self._att_equal_val('category_id', category_id)
         if seller_id is not None:
@@ -162,7 +162,7 @@ class SqlStatement:
             price_down = 0
         if price_up is None:
             price_up = 10000000
-        st += ' and inventory_price between ' + price_up.__str__() + ' and ' + price_down.__str__()
+        st += ' and inventory_price between ' + price_down.__str__() + ' and ' + price_up.__str__()
         if category_id is not None:
             st += ' and ' + self._att_equal_val('category_id', category_id)
         if seller_id is not None:

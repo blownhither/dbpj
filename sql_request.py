@@ -198,6 +198,7 @@ class SqlRequest:
 
     def _add_detail(self, l, order_id):
         # l in format of [(cmt, (o_id OMITTED!!) i_id, qua), (), ...]
+        cur = None
         try:
             cur = self._new_cursor()
             for i in l:
