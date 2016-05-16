@@ -2,10 +2,13 @@ import logging
 import informixdb
 import os
 import sql_statement
+from datetime import datetime
 
 
+# noinspection PyBroadException
 class SqlRequest:
     def __init__(self):
+        self.__startTime = datetime.now().strftime("%Y%m%d%H%M%S")
         self.__Database = 'd_1460371357365469'
         self.__Server = 'ifxserver1'
         self.__Username = 'tqbodnho'
@@ -21,7 +24,7 @@ class SqlRequest:
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                             datefmt='%a, %d %b %Y %H:%M:%S',
-                            filename='log_sql_request.log',
+                            filename='log/' + self.__startTime + 'request.log',
                             filemode='w')
         # sql statement object
         self.stat = sql_statement.SqlStatement()
@@ -196,52 +199,58 @@ class SqlRequest:
             if not isinstance(i, tuple) or not len(tuple) == 3:
                 return False
 
-    def _add_detail(self, l, order_id):
+    def _add_detail(self, l, order_id, cur):    # exception catch in add_single_order
         # l in format of [(cmt, (o_id OMITTED!!) i_id, qua), (), ...]
-        cur = None
-        try:
-            cur = self._new_cursor()
-            for i in l:
-                # add detail entry
-                st = self.stat.add_detail(l[i][0], order_id, l[i][1], l[i][2])
-                cur.execute(st)
-                # cut inventory stock count
-                st = self.stat.update_inventory_quantity(inventory_id=l[i][1], quantity_diff=l[i][2])
-                cur.excute(st)
-            return True
-        except Exception:
-            logging.error(Exception(
-                "Adding detail to order[" + order_id.__str__() + '] encountered exceptions, try rolling back'))
+        if cur is None:
             return False
-        finally:
-            if cur is not None:
-                cur.close()
+        for i in l:
+            # add detail entry
+            st = self.stat.add_detail(l[i][0], order_id, l[i][1], l[i][2])
+            cur.execute(st)
+            # cut inventory stock count
+            st = self.stat.update_inventory_quantity(inventory_id=l[i][1], quantity_diff=l[i][2])
+            cur.execute(st)
+        return True
 
-    # TODO: delete order when detail insertion failed, maybe rollback?
     def add_single_order(self, comment_seller, deliver_id, customer_id, payment_status, total_price, order_date,
                          payment_date, last_update, seller_id, detail):
-        if self._any_none([customer_id, total_price, detail]):
-            return False
-        # type check on detail: should be [(cmt, (o_id OMITTED!!) i_id, qua), (), ...]
-        if not isinstance(detail, list):
-            return False
-        if not self._check_detail(detail):
-            return False
-        if payment_status is None or payment_status == 0:
-            payment_status = 0
-            payment_date = 'NULL'
-        if payment_status > 1:
-            payment_date = 'CURRENT'
-        order_date = last_update = 'CURRENT'
-        st = self.stat.add_single_order(comment_seller, deliver_id, customer_id, payment_status, total_price,
-                                        order_date, payment_date, last_update, seller_id)
-        self._sql_execute(st)
-        order_id = self._sql_last_insert()
-        if self._add_detail(detail, order_id):
+        try:
+            if self._any_none([customer_id, total_price, detail]):
+                return False
+            # type check on detail: should be [(cmt, (o_id OMITTED!!) i_id, qua), (), ...]
+            if not isinstance(detail, list):
+                return False
+            if not self._check_detail(detail):
+                return False
+            if payment_status is None or payment_status == 0:
+                payment_status = 0
+                payment_date = 'NULL'
+            if payment_status > 1:
+                payment_date = 'CURRENT'
+            order_date = last_update = 'CURRENT'
+            st = self.stat.add_single_order(comment_seller, deliver_id, customer_id, payment_status, total_price,
+                                            order_date, payment_date, last_update, seller_id)
+            cur = self._new_cursor()
+            try:
+                cur.execute('begin work')
+            except Exception as e:
+                logging.exception(e)
+                pass
+        except Exception as e:
+            logging.exception(e)
+            return False    # unable to get cursor
+        try:
+            cur.execute(st)
+            cur.execute(self.__sql_last_serial)
+            ans = cur.fetchall()
+            order_id = ans[0][0]
+            self._add_detail(detail, order_id, cur)
             return True
-        else:
-            # TODO: please implement me
-            pass
+        except Exception as e:
+            logging.exception(e)
+            cur.execute('rollback work')    # discard change
+            cur.close()
+            return False
 
     # end of adding methods
 
@@ -358,6 +367,4 @@ class SqlRequest:
             #         return
             #     sql_st = 'select user_id from ' + self.__userTabName + 'where user_name like \'' + user_name.__str__() + '\''
             #     ans = self._sql_fetchall(sql_st)
-
-
 

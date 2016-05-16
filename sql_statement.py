@@ -132,16 +132,18 @@ class SqlStatement:
         st = 'select skip ' + (page_size * page_num).__str__() + ' first ' + page_size.__str__() + ' * from inventory where '
         # if every is None, omitted
         if inventory_name is not None:
-            st += self._att_like_val('inventory_name', inventory_name)
+            st += self._att_like_val('inventory_name', '%'+inventory_name+'%')
             if inventory_desc is not None:
                 st += ' and '
         if inventory_desc is not None:
-            st += self._att_like_val('inventory_desc', inventory_desc)
+            st += self._att_like_val('inventory_desc', '%'+inventory_desc+'%')
+        if not (inventory_desc is None and inventory_name is None):
+            st += ' and '
         if price_down is None:
             price_down = 0
         if price_up is None:
             price_up = 10000000
-        st += ' and inventory_price between ' + price_down.__str__() + ' and ' + price_up.__str__()
+        st += ' inventory_price between ' + price_down.__str__() + ' and ' + price_up.__str__()
         if category_id is not None:
             st += ' and ' + self._att_equal_val('category_id', category_id)
         if seller_id is not None:
