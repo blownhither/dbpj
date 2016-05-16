@@ -8,7 +8,7 @@ from datetime import datetime
 # noinspection PyBroadException
 class SqlRequest:
     def __init__(self):
-        self.__startTime = datetime.now().strftime("%Y%m%d%H%M%S")
+        self.__startTime = datetime.now().strftime("%Y%m%d%H%M")
         self.__Database = 'd_1460371357365469'
         self.__Server = 'ifxserver1'
         self.__Username = 'tqbodnho'
@@ -35,6 +35,7 @@ class SqlRequest:
             raise Exception("Failed to connect via SQL to informixdb")
         else:
             print("connected to database " + self.__Database)
+            logging.debug(msg='connected to database')
         # big const
         self.__inventoryAttr = (
             'inventory_name', 'inventory_desc', 'picture_url', 'inventory_price', ' inventory_quantity', 'category_id',
@@ -212,8 +213,8 @@ class SqlRequest:
             cur.execute(st)
         return True
 
-    def add_single_order(self, comment_seller, deliver_id, customer_id, payment_status, total_price, order_date,
-                         payment_date, last_update, seller_id, detail):
+    def add_single_order(self, comment_seller=None, deliver_id=None, customer_id=None, payment_status=None, total_price=None, order_date=None,
+                         payment_date=None, last_update=None, seller_id=None, detail=None):
         try:
             if self._any_none([customer_id, total_price, detail]):
                 return False
