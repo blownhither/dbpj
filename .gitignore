@@ -6,3 +6,4 @@ ibm_db.pub
 *.pub
 *.py~
 *.sql~
+quick.sh
