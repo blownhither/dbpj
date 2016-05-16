@@ -244,7 +244,7 @@ class SqlRequest:
 
     # end of adding methods
 
-    def exist_user(self, user_id):
+    def exist_user_id(self, user_id):
         try:
             if self._is_none(user_id):
                 return
@@ -261,7 +261,7 @@ class SqlRequest:
         try:
             if self._is_none(user_name):
                 return
-            st = 'select * from ' + self.__userTabName + ' where user_name like ' + user_name
+            st = 'select * from ' + self.__userTabName + ' where user_name like \'' + user_name + '\''
             ans = self._sql_count(st)
             return ans > 0
         except Exception as e:
