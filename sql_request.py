@@ -219,11 +219,14 @@ class SqlRequest:
                          payment_date=None, last_update=None, seller_id=None, detail=None):
         try:
             if self._any_none([customer_id, total_price, detail]):
+                logging.debug('any_none return false')
                 return False
             # type check on detail: should be [(cmt, (o_id OMITTED!!) i_id, qua), (), ...]
             if not isinstance(detail, list):
+                logging.debug('isinstance return false')
                 return False
             if not self._check_detail(detail):
+                logging.debug('check_detail return false')
                 return False
             if payment_status is None or payment_status == 0:
                 payment_status = 0
