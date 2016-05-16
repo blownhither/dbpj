@@ -205,12 +205,12 @@ class SqlRequest:
         # l in format of [(cmt, (o_id OMITTED!!) i_id, qua), (), ...]
         if cur is None:
             return False
-        for i in l:
+        for tup in l:
             # add detail entry
-            st = self.stat.add_detail(l[i][0], order_id, l[i][1], l[i][2])
+            st = self.stat.add_detail(tup[0], order_id, tup[1], tup[2])
             cur.execute(st)
             # cut inventory stock count
-            st = self.stat.update_inventory_quantity(inventory_id=l[i][1], quantity_diff=l[i][2])
+            st = self.stat.update_inventory_quantity(inventory_id=tup[1], quantity_diff=tup[2])
             cur.execute(st)
         return True
 
