@@ -197,10 +197,11 @@ class SqlRequest:
     @staticmethod
     def _check_detail(l):
         for i in l:
-            if not isinstance(i, tuple) or not len(i) == 3:
+            if not isinstance(i, tuple) or len(i) != 3:
                 return False
+        return True
 
-    def _add_detail(self, l, order_id, cur):    # exception catch in add_single_order
+    def _add_detail(self, l, order_id, cur):  # exception catch in add_single_order
         # l in format of [(cmt, (o_id OMITTED!!) i_id, qua), (), ...]
         if cur is None:
             return False
@@ -213,7 +214,8 @@ class SqlRequest:
             cur.execute(st)
         return True
 
-    def add_single_order(self, comment_seller=None, deliver_id=None, customer_id=None, payment_status=None, total_price=None, order_date=None,
+    def add_single_order(self, comment_seller=None, deliver_id=None, customer_id=None, payment_status=None,
+                         total_price=None, order_date=None,
                          payment_date=None, last_update=None, seller_id=None, detail=None):
         try:
             if self._any_none([customer_id, total_price, detail]):
@@ -239,7 +241,7 @@ class SqlRequest:
                 pass
         except Exception as e:
             logging.exception(e)
-            return False    # unable to get cursor
+            return False  # unable to get cursor
         try:
             cur.execute(st)
             cur.execute(self.__sql_last_serial)
@@ -249,7 +251,7 @@ class SqlRequest:
             return True
         except Exception as e:
             logging.exception(e)
-            cur.execute('rollback work')    # discard change
+            cur.execute('rollback work')  # discard change
             cur.close()
             return False
 
