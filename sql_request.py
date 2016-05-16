@@ -37,6 +37,7 @@ class SqlRequest:
             'inventory_name', 'inventory_desc', 'picture_url', 'inventory_price', ' inventory_quantity', 'category_id',
             'seller_id', 'inventory_id 	'
         )
+        self.__sql_last_serial = 'SELECT DBINFO(\'SQLCA.SQLERRD1\') FROM systables WHERE tabname = \'systables\''
 
     @staticmethod
     def _is_none(att):
@@ -134,8 +135,11 @@ class SqlRequest:
     def _add_user(self, name, passw, prev):
         try:
             st = self.stat.add_user(name, passw, prev)
-            self._sql_execute(st)
-            user_id = self._sql_last_insert()
+            cur = self._new_cursor()
+            cur.execute(st)
+            cur.execute(self.__sql_last_serial)
+            ans = cur.fetchall()
+            user_id = ans[0][0]
             # debug
             check = self._sql_fetchall('select user_id from user_info where user_name like \'' + name + '\'')
             if check[0][0] != user_id:
@@ -240,6 +244,18 @@ class SqlRequest:
 
     # end of adding methods
 
+    def exist_user(self, id):
+        try:
+            if self._is_none(id):
+                return
+            sql_str = 'select * from ' + self.__userTabName + 'where user_id = ' + id.__str__()
+            ans = self._sql_count(sql_str)
+            if ans > 1:
+                raise Exception("User ID replication found on " + id.__str__())
+            return ans == 1
+        except Exception as e:
+            logging.exception(e)
+
     def check_login(self, user_name, user_pass):
         st = self.stat.check_login(user_name, user_pass)
         ans = self._sql_fetchall(st)
@@ -330,12 +346,5 @@ class SqlRequest:
             #     sql_st = 'select user_id from ' + self.__userTabName + 'where user_name like \'' + user_name.__str__() + '\''
             #     ans = self._sql_fetchall(sql_st)
 
-            # def exist_user(self, id):
-            #     if self._is_none:
-            #         return
-            #     sql_str = 'select * from ' + self.__userTabName + 'where user_id = ' + id.__str__()
-            #     ans = self._sql_count(sql_str)
-            #     if ans > 1:
-            #         print("User ID replication found on " + id.__str__())
-            #     return ans == 1
+
 
