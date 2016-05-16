@@ -197,7 +197,7 @@ class SqlRequest:
     @staticmethod
     def _check_detail(l):
         for i in l:
-            if not isinstance(i, tuple) or not len(tuple) == 3:
+            if not isinstance(i, tuple) or not len(i) == 3:
                 return False
 
     def _add_detail(self, l, order_id, cur):    # exception catch in add_single_order
