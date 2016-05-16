@@ -94,8 +94,8 @@ class SqlRequest:
         cur = self._new_cursor()
         try:
             cur.execute(sql_str)
-            ans = cur.rowcount()
-            return ans
+            ans = cur.fetchall()
+            return len(ans)
         except Exception as e:
             logging.exception(e)
             return None
@@ -244,17 +244,29 @@ class SqlRequest:
 
     # end of adding methods
 
-    def exist_user(self, id):
+    def exist_user(self, user_id):
         try:
-            if self._is_none(id):
+            if self._is_none(user_id):
                 return
-            sql_str = 'select * from ' + self.__userTabName + 'where user_id = ' + id.__str__()
+            sql_str = 'select * from ' + self.__userTabName + ' where user_id = ' + user_id.__str__()
             ans = self._sql_count(sql_str)
             if ans > 1:
-                raise Exception("User ID replication found on " + id.__str__())
+                raise Exception("User ID replication found on " + user_id.__str__())
             return ans == 1
         except Exception as e:
             logging.exception(e)
+            return False
+
+    def exist_user_name(self, user_name):
+        try:
+            if self._is_none(user_name):
+                return
+            st = 'select * from ' + self.__userTabName + ' where user_name like ' + user_name
+            ans = self._sql_count(st)
+            return ans > 0
+        except Exception as e:
+            logging.exception(e)
+            return False
 
     def check_login(self, user_name, user_pass):
         st = self.stat.check_login(user_name, user_pass)
