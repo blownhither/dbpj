@@ -172,6 +172,34 @@ class SqlStatement:
         st += ';'
         return st
 
+    # def search_order_seller(self, seller_id):
+    #     if self._is_none(seller_id):
+    #         return False
+    #     st = ' select x.deliver_id, x.customer_id, x.payment_status, y.inventory_id, y.quantity'
+    #     st += ' from single_order as x, detail as y where x.seller_id = ' + seller_id.__str__()
+    #     st += ' and x.order_id = y.order_id order by x.payment_status asc, x.order_id asc, payment_date asc ;'
+    #     return st
+
+    def search_order_seller(self, seller_id):
+        if self._is_none(seller_id):
+            return None
+        st = ' select * from single_order where seller_id = ' + seller_id.__str__()
+        st += ' order by last_update asc '
+        return st
+
+    def search_order_customer(self, user_id):
+        if self._is_none(user_id):
+            return None
+        st = ' select * from single_order where customer_id = ' + user_id.__str__()
+        st += ' order by last_update asc '
+        return st
+
+    def search_detail_order(self, order_id):
+        if self._is_none(order_id):
+            return None
+        st = ' select * from detail where order_id = ' + order_id.__str__()
+        return  st
+
     def update_inventory_quantity(self, inventory_id, quantity_diff):
         st = 'update ' + self.__inventoryName + ' set inventory_quantity = inventory_quantity +' + quantity_diff.__str__() + ' '
         st += 'where inventory_id = ' + inventory_id.__str__() + ' and inventory_quantity > -(' + quantity_diff.__str__() + ');'

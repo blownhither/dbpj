@@ -1,4 +1,6 @@
 import logging
+from unittest.test.testmock.testpatch import custom_patch
+
 import informixdb
 import os
 import sql_statement
@@ -41,6 +43,9 @@ class SqlRequest:
             'inventory_name', 'inventory_desc', 'picture_url', 'inventory_price', ' inventory_quantity', 'category_id',
             'seller_id', 'inventory_id 	'
         )
+        self.__orderAttr = ('comment_seller', 'deliver_id', 'customer_id', 'payment_status', 'total_price', 'order_date', 'payment_date', 'last_update', 'seller_id', 'order_id')
+        self.__orderAttr_mask = ('comment_seller', 'deliver_id', 'customer_id', 'payment_status', None, None, None, 'last_update', None, None)
+        self.__detailAttr = ('comment_inventory', 'order_id', 'inventory_id', 'quantity')
         self.__sql_last_serial = 'SELECT DBINFO(\'SQLCA.SQLERRD1\') FROM systables WHERE tabname = \'systables\''
 
     @staticmethod
@@ -215,8 +220,7 @@ class SqlRequest:
         return True
 
     def add_single_order(self, comment_seller=None, deliver_id=None, customer_id=None, payment_status=None,
-                         total_price=None, order_date=None,
-                         payment_date=None, last_update=None, seller_id=None, detail=None):
+                         total_price=None, payment_date=None, seller_id=None, detail=None):
         try:
             if self._any_none([customer_id, total_price, detail]):
                 logging.debug('any_none return false')
@@ -292,8 +296,6 @@ class SqlRequest:
         else:
             return {'user_name': ans[0][0], 'user_privilege': ans[0][1], 'user_id': ans[0][2]}
 
-    # TODO: check roll back possibilities, or use valid bit
-    # TODO: check db's return on update statement
     # TODO: check optimistic lock or pessimistic lock
 
     def update_inventory_quantity(self, inventory_id, quantity_diff):
@@ -318,7 +320,8 @@ class SqlRequest:
         for tup in val:
             dic = {}
             for i in range(0, len(att)):
-                dic[att[i]] = tup[i]
+                if att[i] is not None:
+                    dic[att[i]] = tup[i]
             ans.append(dic)
         return ans
 
@@ -346,31 +349,79 @@ class SqlRequest:
         else:
             return False
 
+    def _make_order_dict(self, val):
+        return self._make_dict_list(self.__orderAttr_mask, val)
 
-            # def add_category(self, dic):
-            #     if self._is_none(dic) or not self._is_dict(dic):
-            #         return
-            #     title = dic.get('category_title', None)
-            #     desc = dic.get('category_desc', None)
-            #     st = self.stat.add_category(title, desc)
-            #     self._sql_execute(st)
+    def search_order_seller(self, seller_id):
+        try:
+            if self._is_none(seller_id):
+                return False
+            st = self.stat.search_order_seller(seller_id)
+            ans = self._sql_fetchall(st)
+            return self._make_order_dict(ans)
+        except Exception as e:
+            logging.exception(e)
+            return False
 
-            # def add_customer(self, dic):
-            #     if self._is_none(dic) or not self._is_dict(dic):
-            #         return
-            #     name = dic.get('user_name', None)
-            #     passw = dic.get('user_pass', None)
-            #     cus_name = dic.get('customer_name', None)
-            #     cus_email = dic.get('customer_email', None)
-            #     if self._any_none([name, passw, cus_email]):
-            #         return
-            #     user_id = self._add_user(name, passw)
-            #     st = self.stat.add_customer(cus_name, cus_email, user_id)
-            #     self._sql_execute(st)
+    def search_order_customer(self, customer_id):
+        try:
+            if self._is_none(customer_id):
+                return False
+            st = self.stat.search_order_customer(customer_id)
+            ans = self._sql_fetchall(st)
+            return self._make_order_dict(ans)
+        except Exception as e:
+            logging.exception(e)
+            return False
 
-            # def exist_user_name(self, user_name):
-            #     if self._is_none:
-            #         return
-            #     sql_st = 'select user_id from ' + self.__userTabName + 'where user_name like \'' + user_name.__str__() + '\''
-            #     ans = self._sql_fetchall(sql_st)
+    def _make_detail_dict(self, val):
+        return self._make_dict_list(self.__detailAttr, val)
+
+    def search_detail_order(self, order_id):
+        try:
+            if self._is_none(order_id):
+                return False
+            st = self.stat.search_detail_order(order_id)
+            ans = self._sql_fetchall(st)
+            return self._make_detail_dict(ans)
+        except Exception as e:
+            logging.exception(e)
+            return False
+
+    # TODO: include inventory_name when research
+
+    # def search_orders_seller(self, seller_id):
+    #     if seller_id is None:
+    #         return False
+    #     st = self.stat.search_order_seller(seller_id)
+    #     ans = self._sql_fetchall(st)
+
+
+
+    # def add_category(self, dic):
+    #     if self._is_none(dic) or not self._is_dict(dic):
+    #         return
+    #     title = dic.get('category_title', None)
+    #     desc = dic.get('category_desc', None)
+    #     st = self.stat.add_category(title, desc)
+    #     self._sql_execute(st)
+
+    # def add_customer(self, dic):
+    #     if self._is_none(dic) or not self._is_dict(dic):
+    #         return
+    #     name = dic.get('user_name', None)
+    #     passw = dic.get('user_pass', None)
+    #     cus_name = dic.get('customer_name', None)
+    #     cus_email = dic.get('customer_email', None)
+    #     if self._any_none([name, passw, cus_email]):
+    #         return
+    #     user_id = self._add_user(name, passw)
+    #     st = self.stat.add_customer(cus_name, cus_email, user_id)
+    #     self._sql_execute(st)
+
+    # def exist_user_name(self, user_name):
+    #     if self._is_none:
+    #         return
+    #     sql_st = 'select user_id from ' + self.__userTabName + 'where user_name like \'' + user_name.__str__() + '\''
+    #     ans = self._sql_fetchall(sql_st)
 
