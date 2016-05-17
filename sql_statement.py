@@ -17,7 +17,7 @@ class SqlStatement:
 
     @staticmethod
     def _is_dict(obj):
-        if not isinstance(obj,dict):
+        if not isinstance(obj, dict):
             print("Unexpected parameter type other than dict")
 
     @staticmethod
@@ -48,7 +48,7 @@ class SqlStatement:
         st += ');'
         return st
 
-    def  _update_statement(self, tab_name, str_count, attr_list, val_list, attr_old, val_old, str_old):
+    def _update_statement(self, tab_name, str_count, attr_list, val_list, attr_old, val_old, str_old):
         # should NOT be used when condition is ' attr is NULL '
         st = 'update ' + tab_name + ' set '
         for i in range(0, len(attr_list)):
@@ -90,18 +90,22 @@ class SqlStatement:
 
     def add_inventory(self, inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
                       category_id, seller_id):
-        st = self._add_statement(self.__inventoryName, 3, [inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
-                                                           category_id, seller_id, 0])
+        st = self._add_statement(self.__inventoryName, 3,
+                                 [inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
+                                  category_id, seller_id, 0])
         return st
 
-    def add_single_order(self, comment_seller, deliver_id, customer_id, payment_status, total_price, order_date, payment_date, last_update, seller_id):
+    def add_single_order(self, comment_seller, deliver_id, customer_id, payment_status, total_price, order_date,
+                         payment_date, last_update, seller_id):
         # if payment_status is None:
         #     payment_status = 0
         #     payment_date = 'NULL'
         # if payment_status > 1:
         #     payment_date = 'CURRENT'
         # order_date = last_update = 'CURRENT'
-        st = self._add_statement(self.__orderName, 2, [comment_seller, deliver_id, customer_id, payment_status, total_price, order_date, payment_date, last_update, seller_id, 0])
+        st = self._add_statement(self.__orderName, 2,
+                                 [comment_seller, deliver_id, customer_id, payment_status, total_price, order_date,
+                                  payment_date, last_update, seller_id, 0])
         return st
 
     def add_detail(self, comment_inventory, order_id, inventory_id, quantitiy=1):
@@ -128,15 +132,17 @@ class SqlStatement:
         st = 'select * from ' + self.__inventoryName + ' where inventory_id = ' + inventory_id.__str__()
         return st
 
-    def search_inventory_page(self, page_size=10, page_num=0, inventory_name=None, inventory_desc=None, price_up=None, price_down=None, category_id=None, seller_id=None):
-        st = 'select skip ' + (page_size * page_num).__str__() + ' first ' + page_size.__str__() + ' * from inventory where '
+    def search_inventory_page(self, page_size=10, page_num=0, inventory_name=None, inventory_desc=None, price_up=None,
+                              price_down=None, category_id=None, seller_id=None):
+        st = 'select skip ' + (
+            page_size * page_num).__str__() + ' first ' + page_size.__str__() + ' * from inventory where '
         # if every is None, omitted
         if inventory_name is not None:
-            st += self._att_like_val('inventory_name', '%'+inventory_name+'%')
+            st += self._att_like_val('inventory_name', '%' + inventory_name + '%')
             if inventory_desc is not None:
                 st += ' and '
         if inventory_desc is not None:
-            st += self._att_like_val('inventory_desc', '%'+inventory_desc+'%')
+            st += self._att_like_val('inventory_desc', '%' + inventory_desc + '%')
         if not (inventory_desc is None and inventory_name is None):
             st += ' and '
         if price_down is None:
@@ -151,7 +157,8 @@ class SqlStatement:
         st += ';'
         return st
 
-    def search_inventory(self, inventory_name=None, inventory_desc=None, price_up=None, price_down=None, category_id=None, seller_id=None):
+    def search_inventory(self, inventory_name=None, inventory_desc=None, price_up=None, price_down=None,
+                         category_id=None, seller_id=None):
         st = 'select * from inventory where '
         # if every is None, omitted
         if inventory_name is not None:
@@ -197,8 +204,9 @@ class SqlStatement:
     def search_detail_order(self, order_id):
         if self._is_none(order_id):
             return None
-        st = ' select * from detail where order_id = ' + order_id.__str__()
-        return  st
+        st = ' select y.inventory_id, y.inventory_name, x.quantity, x.comment_inventory '
+        st += "from detail as x, inventory as y where x.inventory_id = y.inventory_id and x.order_id = " + order_id.__str__()
+        return st
 
     def update_inventory_quantity(self, inventory_id, quantity_diff):
         st = 'update ' + self.__inventoryName + ' set inventory_quantity = inventory_quantity +' + quantity_diff.__str__() + ' '
@@ -208,8 +216,7 @@ class SqlStatement:
     def update_inventory_price(self, inventory_id, new_price):
         st = 'update ' + self.__inventoryName + ' set inventory_price = ' + new_price.__str__() + ' '
         st += 'where inventory_id = ' + inventory_id.__str__() + ';'
-
-
+        return st
 
     # def update_inventory(self, inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
     #                   category_id, seller_id):
@@ -219,3 +226,4 @@ class SqlStatement:
         st = 'delete from ' + self.__inventoryName
         st += ' where inventory_id = ' + inventory_id.__str__()
         # TODO
+

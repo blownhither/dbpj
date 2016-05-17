@@ -98,8 +98,8 @@ insert into inventory values('iMac 27-inch Retina',	NULL,'http://images.apple.co
 insert into inventory values('Mac mini',				NULL,'http://images.apple.com/v/mac/compare/d/results/images/results_product_mac_mini_large.jpg',3588,100,10,1,0);
 insert into inventory values('Mac Pro',				NULL,'http://images.apple.com/v/mac/compare/d/results/images/results_product_mac_pro_large.jpg',2188,100,10,1,0);
 
-
-
+insert into single_order values ('Good stuff', 'DELIVZ213548',15,1,1800,current,current,current,1,0);
+insert into detail values ('Love this!', 1, 1, 2);
 
 
 
