@@ -1,5 +1,5 @@
 import logging
-from unittest.test.testmock.testpatch import custom_patch
+# from unittest.test.testmock.testpatch import custom_patch
 
 import informixdb
 import os
