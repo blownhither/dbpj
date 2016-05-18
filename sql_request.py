@@ -38,7 +38,7 @@ class SqlRequest:
             print("connected to database " + self.__Database)
             logging.debug(msg='connected to database')
         # big const
-        self.__userAttr = ('user_name', 'user_privilege', 'user_id')
+        self.__userAttr = ('user_name', 'user_addr', 'user_tel', 'user_privilege', 'user_id')
         self.__inventoryAttr = (
             'inventory_name', 'inventory_desc', 'picture_url', 'inventory_price', ' inventory_quantity', 'category_id',
             'seller_id', 'inventory_id 	'
@@ -46,6 +46,7 @@ class SqlRequest:
         self.__orderAttr = ('comment_seller', 'deliver_id', 'customer_id', 'payment_status', 'total_price', 'order_date', 'payment_date', 'last_update', 'seller_id', 'order_id')
         self.__orderAttr_mask = ('comment_seller', 'deliver_id', 'customer_id', 'payment_status','total_price', None, None, None, 'seller_id', 'order_id')
         self.__detailAttr = ('comment_inventory', 'order_id', 'inventory_id', 'quantity')
+        self.__payment_status_dict = {1: 'unpaid', 2: 'paid', 3: 'shipping', 4: 'delivered', 5: 'refunded', 6: 'cancelled'}
         self.__sql_last_serial = 'SELECT DBINFO(\'SQLCA.SQLERRD1\') FROM systables WHERE tabname = \'systables\''
 
     @staticmethod
@@ -96,7 +97,7 @@ class SqlRequest:
             return True
         except Exception as e:
             logging.exception(e)
-            return False
+            raise e
         finally:
             cur.close()
 
@@ -142,41 +143,56 @@ class SqlRequest:
         else:
             return False
 
-    def _add_user(self, name, passw, prev):
+    def _add_user(self, user_name, user_pass, user_privilege=None, user_addr=None, user_tel=None):
         try:
-            st = self.stat.add_user(name, passw, prev)
+            if self._any_none([user_name, user_pass]):
+                return False
+            if user_privilege is None:
+                user_privilege = 2
+            if user_addr is None:
+                user_addr = 'Fudan University'
+            if user_tel is None:
+                user_tel = '13700000000'
+            st = self.stat.add_user(user_name, user_pass, user_privilege, user_addr, user_tel)
             cur = self._new_cursor()
             cur.execute(st)
             cur.execute(self.__sql_last_serial)
             ans = cur.fetchall()
             user_id = ans[0][0]
             # debug
-            check = self._sql_fetchall('select user_id from user_info where user_name like \'' + name + '\'')
+            check = self._sql_fetchall('select user_id from user_info where user_name like \'' + user_name + '\'')
             if check[0][0] != user_id:
+                print('_sql_last_insert() function failed to fetch correct id in add_customer')
                 raise Exception('_sql_last_insert() function failed to fetch correct id in add_customer')
             return user_id
         except Exception as e:
             logging.exception(e)
             return None
 
-    def add_seller(self, user_name, user_pass, seller_name, seller_addr):
-        if self._is_none(seller_name):
-            return False
-        uid = self._add_user(user_name, user_pass, 1)
-        st = self.stat.add_seller(seller_name, seller_addr, uid)
-        if self._sql_execute(st):
+    def add_seller(self, user_name, user_pass, user_addr, user_tel, seller_name, seller_addr):
+        try:
+            if self._is_none(seller_name):
+                return False
+            uid = self._add_user(user_name, user_pass, 1, user_addr, user_tel)
+            if uid is None:
+                return False
+            st = self.stat.add_seller(seller_name, seller_addr, uid)
+            self._sql_execute(st)
             return True
-        else:
+        except Exception as e:
+            logging.exception(e)
             return False
 
-    def add_customer(self, user_name, user_pass, customer_name, customer_email):
-        if self._is_none(customer_name) or self._is_none(customer_email):
-            return False
-        uid = self._add_user(user_name, user_pass, 2)
-        st = self.stat.add_seller(customer_name, customer_email, uid)
-        if self._sql_execute(st):
+    def add_customer(self, user_name, user_pass, user_addr, user_tel, customer_name, customer_email):
+        try:
+            if self._any_none([user_name, user_pass, customer_name, customer_email]):
+                return False
+            uid = self._add_user(user_name, user_pass, 2, user_addr, user_tel)
+            st = self.stat.add_seller(customer_name, customer_email, uid)
+            self._sql_execute(st)
             return True
-        else:
+        except Exception as e:
+            logging.exception(e)
             return False
 
     def add_inventory(self, inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
@@ -192,13 +208,6 @@ class SqlRequest:
             return True
         else:
             return False
-
-    # def _add_detail(self, comment_inventory, order_id, inventory_id, quantity=1):
-    #     if self._any_none([order_id, inventory_id, quantity]):
-    #         return False
-    #     st = self.stat.add_detail(comment_inventory, order_id, inventory_id, quantity)
-    #     self._sql_execute(st)
-    #     return True
 
     @staticmethod
     def _check_detail(l):
@@ -269,8 +278,11 @@ class SqlRequest:
         try:
             if self._is_none(user_id):
                 return
-            sql_str = 'select * from ' + self.__userTabName + ' where user_id = ' + user_id.__str__()
-            ans = self._sql_count(sql_str)
+            # sql_str = 'select * from ' + self.__userTabName + ' where user_id = ' + user_id.__str__()
+            # ans = self._sql_count(sql_str)
+            st = 'select count(*) from user_info where user_id = ' + user_id.__str__()
+            ans = self._sql_fetchall(st)
+            ans = ans[0][0]
             if ans > 1:
                 raise Exception("User ID replication found on " + user_id.__str__())
             return ans == 1
@@ -282,8 +294,9 @@ class SqlRequest:
         try:
             if self._is_none(user_name):
                 return
-            st = 'select * from ' + self.__userTabName + ' where user_name like \'' + user_name + '\''
-            ans = self._sql_count(st)
+            st = 'select count(*) from ' + self.__userTabName + ' where user_name like \'' + user_name + '\''
+            ans = self._sql_fetchall(st)
+            ans = ans[0][0]
             return ans > 0
         except Exception as e:
             logging.exception(e)
@@ -295,7 +308,7 @@ class SqlRequest:
         if len(ans) != 1:
             return False
         else:
-            return {'user_name': ans[0][0], 'user_privilege': ans[0][1], 'user_id': ans[0][2]}
+            return {'user_name': ans[0][0], 'user_privilege': ans[0][1], 'user_id': ans[0][2], 'user_addr': ans[0][3], 'user_tel': ans[0][4]}
 
     def _make_user_dict(self, val):
         return self._make_dict_list(self.__userAttr,val)
@@ -366,10 +379,20 @@ class SqlRequest:
         else:
             return False
 
-    def _make_order_dict(self, val, extra=None):
+    def _make_order_dict_mask(self, val, extra=None):
         if extra is None:
             return self._make_dict_list(self.__orderAttr_mask, val)
         return self._make_dict_list(self.__orderAttr_mask + extra, val)
+
+    def _make_order_dict(self, val):
+        return self._make_dict_list(self.__orderAttr, val)
+
+    def _parse_payment_status(self, dic_list):
+        if dic_list is None:
+            return False
+        for dic in dic_list:
+            if 'payment_status' in dic:
+                dic['payment_status'] = self.__payment_status_dict[dic['payment_status']]
 
     def search_order_seller(self, seller_id):
         try:
@@ -377,7 +400,8 @@ class SqlRequest:
                 return False
             st = self.stat.search_order_seller(seller_id)
             ans = self._sql_fetchall(st)
-            return self._make_order_dict(val=ans, extra=('customer_name', ))
+            dic_list = self._make_order_dict_mask(val=ans, extra=('customer_name',))
+            return self._parse_payment_status(dic_list)
         except Exception as e:
             logging.exception(e)
             return False
@@ -388,13 +412,26 @@ class SqlRequest:
                 return False
             st = self.stat.search_order_customer(customer_id)
             ans = self._sql_fetchall(st)
-            return self._make_order_dict(val=ans, extra=('seller_name', ))
+            dic_list = self._make_order_dict_mask(val=ans, extra=('seller_name',))
+            return self._parse_payment_status(dic_list)
         except Exception as e:
             logging.exception(e)
             return False
 
     def _make_detail_dict(self, val):
         return self._make_dict_list(self.__detailAttr, val)
+
+    def search_order_id(self, order_id):
+        try:
+            if self._is_none(order_id):
+                return False
+            st = 'select * from single_order where order_id = ' + order_id.__str__()
+            ans = self._sql_fetchall(st)
+            dic_list = self._make_order_dict_mask(ans)
+            return self._parse_payment_status(dic_list)
+        except Exception as e:
+            logging.exception(e)
+            return False
 
     def search_detail_order(self, order_id):
         try:
@@ -406,8 +443,6 @@ class SqlRequest:
         except Exception as e:
             logging.exception(e)
             return False
-
-    # TODO: include inventory_name when research
 
     # def search_orders_seller(self, seller_id):
     #     if seller_id is None:

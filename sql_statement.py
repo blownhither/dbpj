@@ -76,8 +76,8 @@ class SqlStatement:
         st = self._add_statement(self.__categoryName, 2, [category_title, category_desc, 0])
         return st
 
-    def add_user(self, name, passw, prev):
-        st = self._add_statement(self.__userTabName, 2, [name, passw, prev, 0])
+    def add_user(self, user_name, user_pass, user_privilege, user_addr, user_tel):
+        st = self._add_statement(self.__userTabName, 4, [user_name, user_pass, user_privilege, user_addr, user_tel, 0])
         return st
 
     def add_seller(self, seller_name, seller_addr, user_id):
@@ -113,7 +113,7 @@ class SqlStatement:
         return st
 
     def check_login(self, user_name, user_pass):
-        st = 'select user_name, user_privilege, user_id from ' + self.__userTabName + ' where user_name like \'' + user_name + '\' and user_pass like \'' + user_pass + '\';'
+        st = 'select user_name, user_privilege, user_id, user_addr, user_tel from ' + self.__userTabName + ' where user_name like \'' + user_name + '\' and user_pass like \'' + user_pass + '\';'
         return st
 
 
