@@ -1,6 +1,5 @@
 import logging
 # from unittest.test.testmock.testpatch import custom_patch
-
 import informixdb
 import os
 import sql_statement
@@ -39,12 +38,13 @@ class SqlRequest:
             print("connected to database " + self.__Database)
             logging.debug(msg='connected to database')
         # big const
+        self.__userAttr = ('user_name', 'user_privilege', 'user_id')
         self.__inventoryAttr = (
             'inventory_name', 'inventory_desc', 'picture_url', 'inventory_price', ' inventory_quantity', 'category_id',
             'seller_id', 'inventory_id 	'
         )
         self.__orderAttr = ('comment_seller', 'deliver_id', 'customer_id', 'payment_status', 'total_price', 'order_date', 'payment_date', 'last_update', 'seller_id', 'order_id')
-        self.__orderAttr_mask = ('comment_seller', 'deliver_id', 'customer_id', 'payment_status', None, None, None, 'last_update', None, None)
+        self.__orderAttr_mask = ('comment_seller', 'deliver_id', 'customer_id', 'payment_status','total_price', None, None, None, 'seller_id', 'order_id')
         self.__detailAttr = ('comment_inventory', 'order_id', 'inventory_id', 'quantity')
         self.__sql_last_serial = 'SELECT DBINFO(\'SQLCA.SQLERRD1\') FROM systables WHERE tabname = \'systables\''
 
@@ -68,8 +68,9 @@ class SqlRequest:
             print("Unexpected parameter type other than dict")
 
     def __del__(self):
-        self.conn.commit()
-        self.conn.close()
+        if self.conn is not None:
+            self.conn.commit()
+            self.conn.close()
 
     # TODO: consider connection/cursor pool
 
@@ -292,9 +293,25 @@ class SqlRequest:
         st = self.stat.check_login(user_name, user_pass)
         ans = self._sql_fetchall(st)
         if len(ans) != 1:
-            return None
+            return False
         else:
             return {'user_name': ans[0][0], 'user_privilege': ans[0][1], 'user_id': ans[0][2]}
+
+    def _make_user_dict(self, val):
+        return self._make_dict_list(self.__userAttr,val)
+
+    def search_user_id(self, user_id):
+        if user_id is None:
+            return False
+        try:
+            st = ' select user_name, user_privilege, user_id from user_info where user_id = ' + user_id.__str__()
+            ans = self._sql_fetchall(st)
+            if len(ans) < 1:
+                return None
+            return self._make_user_dict(ans[0])
+        except Exception as e:
+            logging.exception(e)
+            return False
 
     # TODO: check optimistic lock or pessimistic lock
 
@@ -349,8 +366,10 @@ class SqlRequest:
         else:
             return False
 
-    def _make_order_dict(self, val):
-        return self._make_dict_list(self.__orderAttr_mask, val)
+    def _make_order_dict(self, val, extra=None):
+        if extra is None:
+            return self._make_dict_list(self.__orderAttr_mask, val)
+        return self._make_dict_list(self.__orderAttr_mask + extra, val)
 
     def search_order_seller(self, seller_id):
         try:
@@ -358,7 +377,7 @@ class SqlRequest:
                 return False
             st = self.stat.search_order_seller(seller_id)
             ans = self._sql_fetchall(st)
-            return self._make_order_dict(ans)
+            return self._make_order_dict(val=ans, extra=('customer_name', ))
         except Exception as e:
             logging.exception(e)
             return False
@@ -369,7 +388,7 @@ class SqlRequest:
                 return False
             st = self.stat.search_order_customer(customer_id)
             ans = self._sql_fetchall(st)
-            return self._make_order_dict(ans)
+            return self._make_order_dict(val=ans, extra=('seller_name', ))
         except Exception as e:
             logging.exception(e)
             return False

@@ -116,6 +116,7 @@ class SqlStatement:
         st = 'select user_name, user_privilege, user_id from ' + self.__userTabName + ' where user_name like \'' + user_name + '\' and user_pass like \'' + user_pass + '\';'
         return st
 
+
     @staticmethod
     def _att_like_val(att, val):
         if val is None:
@@ -190,16 +191,23 @@ class SqlStatement:
     def search_order_seller(self, seller_id):
         if self._is_none(seller_id):
             return None
-        st = ' select * from single_order where seller_id = ' + seller_id.__str__()
-        st += ' order by last_update asc '
+        st = ' select x.*, cus.user_name from single_order as x, user_info as cus '
+        st += 'where cus.user_id = x.customer_id and x.seller_id = ' + seller_id.__str__()
+        st += ' order by x.last_update asc '
         return st
 
     def search_order_customer(self, user_id):
         if self._is_none(user_id):
             return None
-        st = ' select * from single_order where customer_id = ' + user_id.__str__()
-        st += ' order by last_update asc '
+        st = ' select x.*, y.user_name from single_order as x, user_info as y '
+        st += ' where x.seller_id = y.user_id and customer_id = ' + user_id.__str__()
+        st += ' order by x.last_update asc '
         return st
+
+    def update_order_status(self, order_id     ):
+        # TODO:
+        pass
+
 
     def search_detail_order(self, order_id):
         if self._is_none(order_id):
@@ -217,6 +225,7 @@ class SqlStatement:
         st = 'update ' + self.__inventoryName + ' set inventory_price = ' + new_price.__str__() + ' '
         st += 'where inventory_id = ' + inventory_id.__str__() + ';'
         return st
+
 
     # def update_inventory(self, inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
     #                   category_id, seller_id):
