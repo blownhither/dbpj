@@ -123,7 +123,7 @@ class SqlRequest:
             return a
         except Exception as e:
             logging.exception(e)
-            return None
+            raise e
 
     def _sql_last_insert(self):
         try:
@@ -393,6 +393,7 @@ class SqlRequest:
         for dic in dic_list:
             if 'payment_status' in dic:
                 dic['payment_status'] = self.__payment_status_dict[dic['payment_status']]
+        return dic_list
 
     def search_order_seller(self, seller_id):
         try:
