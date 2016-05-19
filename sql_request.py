@@ -428,8 +428,10 @@ class SqlRequest:
                 return False
             st = 'select * from single_order where order_id = ' + order_id.__str__()
             ans = self._sql_fetchall(st)
+            if len(ans) == 0:
+                return None
             dic_list = self._make_order_dict_mask(ans)
-            return self._parse_payment_status(dic_list)
+            return (self._parse_payment_status(dic_list))[0]
         except Exception as e:
             logging.exception(e)
             return False
