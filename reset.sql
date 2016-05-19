@@ -17,11 +17,12 @@ create table if not exists category (
 create table if not exists user_info (
 	user_name		varchar(225) unique,
 	user_pass		char(32),
+	user_addr		varchar(225),
+	user_tel		varchar(225),
 	user_privilege	smallint,
 	user_id 		serial not null,
 	primary key(user_id)
 );
-
 create table if not exists seller (
     seller_name 		varchar(255),
     seller_addr 		varchar(255),
@@ -47,7 +48,7 @@ create table if not exists inventory (
 
 create table if not exists customer (
 	customer_name 	varchar(255),
-    customer_email	varchar(255) unique,
+    customer_email	varchar(255) unique not null,
     user_id 	int not null,
     primary key(user_id),
 	foreign key(user_id) references user_info(user_id)
@@ -82,7 +83,31 @@ create table if not exists detail(
 
 insert into category values('Video','Digital Video',0);insert into category values ('Music','Digital & Prime Music',0);insert into category values ('App','Appstore',0);insert into category values ('Cloud','Cloud Drive Service',0);insert into category values ('EBook','E-readers & Books',0);insert into category values ('EverydayFresh','Fresh Food & Health Care',0);insert into category values ('Book','Books',0);insert into category values ('Movies','Movies',0);insert into category values ('Games','Games',0);insert into category values ('Electronics','Electronics',0);insert into category values ('Household','Household',0);insert into category values ('Health','Beauty Health & Grocery',0);insert into category values ('Toys','Toys Kids & Baby',0);insert into category values ('Clothing','Clothing Shoes & Jewelry',0);insert into category values ('Sports','Sports & Outdoors',0);insert into category values ('Industrial','Automotive & Industrial',0);insert into category values ('Handmade','Handmade',0);insert into category values ('Services','Services',0);
 
-insert into user_info values ('Username1','password',1,0);insert into user_info values ('Username2','password',1,0);insert into user_info values ('Username3','password',1,0);insert into user_info values ('Username4','password',1,0);insert into user_info values ('Username5','password',1,0);insert into user_info values ('Username6','password',1,0);insert into user_info values ('Username7','password',1,0);insert into user_info values ('Username8','password',1,0);insert into user_info values ('Username9','password',1,0);insert into user_info values ('Username10','password',2,0);insert into user_info values ('Username11','password',2,0);insert into user_info values ('Username12','password',2,0);insert into user_info values ('Username13','password',2,0);insert into user_info values ('Username14','password',2,0);insert into user_info values ('Username15','password',2,0);insert into user_info values ('Username16','password',2,0);insert into user_info values ('Username17','password',2,0);insert into user_info values ('Username18','password',2,0);insert into user_info values ('Username19','password',2,0);insert into user_info values ('maziyin','maziyin',0,0);insert into user_info values ('chenkan','chenkan',0,0);insert into user_info values ('shengyutao','shengyutao',0,0);insert into user_info values ('admin','admin',0,0);insert into user_info values ('mzy','admin1',2,0);
+insert into user_info values ('Username1','password','Fudan University','13700000001',1,0);
+insert into user_info values ('Username2','password','Fudan University','13700000002',1,0);
+insert into user_info values ('Username3','password','Fudan University','13700000003',1,0);
+insert into user_info values ('Username4','password','Fudan University','13700000004',1,0);
+insert into user_info values ('Username5','password','Fudan University','13700000005',1,0);
+insert into user_info values ('Username6','password','Fudan University','13700000006',1,0);
+insert into user_info values ('Username7','password','Fudan University','13700000007',1,0);
+insert into user_info values ('Username8','password','Fudan University','13700000008',1,0);
+insert into user_info values ('Username9','password','Fudan University','13700000009',1,0);
+insert into user_info values ('Username10','password','Fudan University','13700000010',2,0);
+insert into user_info values ('Username11','password','Fudan University','13700000011',2,0);
+insert into user_info values ('Username12','password','Fudan University','13700000012',2,0);
+insert into user_info values ('Username13','password','Fudan University','13700000013',2,0);
+insert into user_info values ('Username14','password','Fudan University','13700000014',2,0);
+insert into user_info values ('Username15','password','Fudan University','13700000015',2,0);
+insert into user_info values ('Username16','password','Fudan University','13700000016',2,0);
+insert into user_info values ('Username17','password','Fudan University','13700000017',2,0);
+insert into user_info values ('Username18','password','Fudan University','13700000018',2,0);
+insert into user_info values ('Username19','password','Fudan University','13700000019',2,0);
+insert into user_info values ('maziyin','maziyin','Fudan University','13701666666',0,0);
+insert into user_info values ('chenkan','chenkan','Fudan University','13701777777',0,0);
+insert into user_info values ('shengyutao','shengyutao','Fudan University','13701888888',0,0);
+insert into user_info values ('admin','admin','Fudan University','13701999999',0,0);
+insert into user_info values ('mzy','admin1','Fudan University','13794653182',0,0);
+
 insert into seller values ('Seller0','Shanghai',0);insert into seller values ('Seller1','Shanghai',1);insert into seller values ('Seller2','Shanghai',2);insert into seller values ('Seller3','Shanghai',3);insert into seller values ('Seller4','Shanghai',4);insert into seller values ('Seller5','Shanghai',5);insert into seller values ('Seller6','Shanghai',6);insert into seller values ('Seller7','Shanghai',7);insert into seller values ('Seller8','Shanghai',8);insert into seller values ('Seller9','Shanghai',9);
 insert into customer values ('Customer10','public10@customer.cn',10);insert into customer values ('Customer11','public11@customer.cn',11);insert into customer values ('Customer12','public12@customer.cn',12);insert into customer values ('Customer13','public13@customer.cn',13);insert into customer values ('Customer14','public14@customer.cn',14);insert into customer values ('Customer15','public15@customer.cn',15);insert into customer values ('Customer16','public16@customer.cn',16);insert into customer values ('Customer17','public17@customer.cn',17);insert into customer values ('Customer18','public18@customer.cn',18);insert into customer values ('Customer19','public19@customer.cn',19);
 

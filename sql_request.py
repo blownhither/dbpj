@@ -352,7 +352,7 @@ class SqlRequest:
             dic = {}
             for i in range(0, len(att)):
                 if att[i] is not None:
-                    dic[att[i]] = tup[i]
+                    dic[att[i]] = tup[i].__str__()
             ans.append(dic)
         return ans
 
