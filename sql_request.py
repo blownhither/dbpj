@@ -167,7 +167,6 @@ class SqlRequest:
                 raise Exception('_sql_last_insert() function failed to fetch correct id in add_customer')
             return user_id
         except Exception as e:
-            print(e)
             logging.exception(e)
             return False
 
