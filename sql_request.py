@@ -337,7 +337,7 @@ class SqlRequest:
             return False
         try:
             st = ' select x.user_name, x.user_privilege, x.user_id, x.user_addr, x.user_tel, y.customer_name, y.customer_email'
-            st += 'from user_info as x, customer as y where x.user_id = ' + user_id.__str__()
+            st += 'from user_info as x, customer as y where x.user_id = y.user_id and x.user_id = ' + user_id.__str__()
             ans = self._sql_fetchall(st)
             if len(ans) < 1:
                 return None
