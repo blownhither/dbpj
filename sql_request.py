@@ -379,11 +379,15 @@ class SqlRequest:
         return self._make_dict_list(self.__inventoryAttr, val)
 
     def search_inventory_id(self, inventory_id):
-        st = self.stat.search_inventory_id(inventory_id)
-        ans = self._sql_fetchall(st)
-        if ans:
-            return self._make_inventory_dict(ans)
-        else:
+        try:
+            st = self.stat.search_inventory_id(inventory_id)
+            ans = self._sql_fetchall(st)
+            if ans:
+                return self._make_inventory_dict(ans)
+            else:
+                return False
+        except Exception as e:
+            logging.exception(e)
             return False
 
     def search_inventory(self, page_size=10, page_num=0, inventory_name=None, inventory_desc=None, price_up=None,
@@ -391,12 +395,16 @@ class SqlRequest:
         # st = self.stat.search_inventory(inventory_name, inventory_desc, price_up, price_down, category_id, seller_id)
         # ans = self._sql_fetchall(st)
         # return self._make_inventory_dict(ans)
-        st = self.stat.search_inventory_page(page_size, page_num, inventory_name, inventory_desc, price_up, price_down,
-                                             category_id, seller_id)
-        ans = self._sql_fetchall(st)
-        if ans:
-            return self._make_inventory_dict(ans)
-        else:
+        try:
+            st = self.stat.search_inventory_page(page_size, page_num, inventory_name, inventory_desc, price_up, price_down,
+                                                 category_id, seller_id)
+            ans = self._sql_fetchall(st)
+            if ans:
+                return self._make_inventory_dict(ans)
+            else:
+                return False
+        except Exception as e:
+            logging.exception(e)
             return False
 
     def _make_order_dict_mask(self, val, extra=None):
