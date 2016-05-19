@@ -153,7 +153,7 @@ class SqlRequest:
                 user_addr = 'Fudan University'
             if user_tel is None:
                 user_tel = '13700000000'
-            st = self.stat.add_user(user_name, user_pass, user_privilege, user_addr, user_tel)
+            st = self.stat.add_user(user_name, user_pass, user_addr, user_tel, user_privilege)
             cur = self._new_cursor()
             cur.execute(st)
             cur.execute(self.__sql_last_serial)
