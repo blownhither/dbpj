@@ -45,7 +45,7 @@ class SqlRequest:
         )
         self.__orderAttr = ('comment_seller', 'deliver_id', 'customer_id', 'payment_status', 'total_price', 'order_date', 'payment_date', 'last_update', 'seller_id', 'order_id')
         self.__orderAttr_mask = ('comment_seller', 'deliver_id', 'customer_id', 'payment_status','total_price', 'order_date', None, None, 'seller_id', 'order_id')
-        self.__detailAttr = ('comment_inventory', 'order_id','quantity',  'inventory_id')
+        self.__detailAttr = ( 'inventory_id', 'inventory_name', 'quantity', 'comment_inventory')
         self.__customerAttr = ('user_name', 'user_addr', 'user_tel', 'user_privilege', 'user_id', 'customer_name', 'customer_email')
         self.__payment_status_dict = {1: 'unpaid', 2: 'paid', 3: 'shipping', 4: 'delivered', 5: 'refunded', 6: 'cancelled'}
         self.__sql_last_serial = 'SELECT DBINFO(\'SQLCA.SQLERRD1\') FROM systables WHERE tabname = \'systables\''
