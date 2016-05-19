@@ -311,13 +311,13 @@ class SqlRequest:
             return {'user_name': ans[0][0], 'user_privilege': ans[0][1], 'user_id': ans[0][2], 'user_addr': ans[0][3], 'user_tel': ans[0][4]}
 
     def _make_user_dict(self, val):
-        return self._make_dict_list(self.__userAttr,val)
+        return self._make_dict_list(self.__userAttr, val)
 
     def search_user_id(self, user_id):
         if user_id is None:
             return False
         try:
-            st = ' select user_name, user_privilege, user_id from user_info where user_id = ' + user_id.__str__()
+            st = ' select user_name, user_privilege, user_id, user_addr, user_tel from user_info where user_id = ' + user_id.__str__()
             ans = self._sql_fetchall(st)
             if len(ans) < 1:
                 return None
