@@ -85,7 +85,7 @@ class SqlStatement:
         return st
 
     def add_customer(self, customer_name, customer_email, user_id):
-        st = self._add_statement(self.__sellerName, 2, [customer_name, customer_email, user_id])
+        st = self._add_statement(self.__customerName, 2, [customer_name, customer_email, user_id])
         return st
 
     def add_inventory(self, inventory_name, inventory_desc, picture_url, inventory_price, inventory_quantity,
