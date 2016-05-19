@@ -413,6 +413,8 @@ class SqlRequest:
                 return False
             st = self.stat.search_order_customer(customer_id)
             ans = self._sql_fetchall(st)
+            if len(ans) == 0:
+                return []
             dic_list = self._make_order_dict_mask(val=ans, extra=('seller_name',))
             return self._parse_payment_status(dic_list)
         except Exception as e:
