@@ -188,7 +188,7 @@ class SqlRequest:
             if self._any_none([user_name, user_pass, customer_name, customer_email]):
                 return False
             uid = self._add_user(user_name, user_pass, 2, user_addr, user_tel)
-            st = self.stat.add_seller(customer_name, customer_email, uid)
+            st = self.stat.add_customer(customer_name, customer_email, uid)
             self._sql_execute(st)
             return True
         except Exception as e:
