@@ -17,6 +17,8 @@ create table if not exists category (
 create table if not exists user_info (
 	user_name		varchar(225) unique,
 	user_pass		char(32),
+	user_addr		varchar(225),
+	user_tel		varchar(225),
 	user_privilege	smallint,
 	user_id 		serial not null,
 	primary key(user_id)
@@ -47,7 +49,7 @@ create table if not exists inventory (
 
 create table if not exists customer (
 	customer_name 	varchar(255),
-    customer_email	varchar(255) unique,
+    customer_email	varchar(255) unique not null,
     user_id 	int not null,
     primary key(user_id),
 	foreign key(user_id) references user_info(user_id)
@@ -69,6 +71,11 @@ create table if not exists single_order (
     foreign key (customer_id) references customer(user_id),
 	foreign key (seller_id) references seller(user_id)        
 );
+
+/* payment_status = {
+1.unpaid,	2.paid	3.shipping	4.
+cancelled
+} */
 
 create table if not exists detail(
 	comment_inventory	varchar(255),
