@@ -46,8 +46,10 @@ class SqlRequest:
         self.__orderAttr = ('comment_seller', 'deliver_id', 'customer_id', 'payment_status', 'total_price', 'order_date', 'payment_date', 'last_update', 'seller_id', 'order_id')
         self.__orderAttr_mask = ('comment_seller', 'deliver_id', 'customer_id', 'payment_status','total_price', 'order_date', None, None, 'seller_id', 'order_id')
         self.__detailAttr = ('comment_inventory', 'order_id', 'inventory_id', 'quantity')
+        self.__customerAttr = ('user_name', 'user_addr', 'user_tel', 'user_privilege', 'user_id', 'customer_name', 'customer_email')
         self.__payment_status_dict = {1: 'unpaid', 2: 'paid', 3: 'shipping', 4: 'delivered', 5: 'refunded', 6: 'cancelled'}
         self.__sql_last_serial = 'SELECT DBINFO(\'SQLCA.SQLERRD1\') FROM systables WHERE tabname = \'systables\''
+
 
     @staticmethod
     def _is_none(att):
@@ -323,6 +325,23 @@ class SqlRequest:
             if len(ans) < 1:
                 return None
             return self._make_user_dict(ans)[0]
+        except Exception as e:
+            logging.exception(e)
+            return False
+
+    def _make_customer_dict(self, val):
+        return self._make_dict_list(self.__customerAttr, val)
+
+    def search_customer_id(self, user_id):
+        if user_id is None:
+            return False
+        try:
+            st = ' select x.user_name, x.user_privilege, x.user_id, x.user_addr, x.user_tel, y.customer_name, y.customer_email'
+            st += 'from user_info as x, customer as y where x.user_id = ' + user_id.__str__()
+            ans = self._sql_fetchall(st)
+            if len(ans) < 1:
+                return None
+            return self._make_customer_dict(ans)[0]
         except Exception as e:
             logging.exception(e)
             return False
